@@ -1,0 +1,22 @@
+{
+  "name": "harknology-rt",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "bun-types": "^1.0.15"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@hono/clerk-auth": "^1.0.0",
+    "@hono/zod-validator": "^0.1.11",
+    "hono": "^3.11.3",
+    "postgres": "^3.4.3",
+    "zod": "^3.22.4"
+  },
+  "scripts": {
+    "dev": "bun run --hot index.ts",
+    "start": "bun run index.ts"
+  }
+}
