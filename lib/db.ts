@@ -20,7 +20,7 @@ export type MessageEvent = TMessageRequest & {
 
 export async function saveMessage(msg: TMessageRequest): Promise<MessageEvent> {
     const [{ id, created_at, updated_at }] = (await sql<[{ id: string, created_at: Date, updated_at: Date }]>`
-        insert into Response
+        insert into "Response"
             (discussion_id, poster_id, content)
         values
             (${msg.discussionId}, ${msg.posterId}, ${msg.content})
@@ -28,7 +28,7 @@ export async function saveMessage(msg: TMessageRequest): Promise<MessageEvent> {
     `)
 
     for(const reply of msg.inReplyTo) await sql`
-        insert into Reply
+        insert into "Reply"
             (from_id, to_id)
         values
             (${id}, ${reply})
