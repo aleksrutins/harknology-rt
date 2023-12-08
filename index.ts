@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { streamSSE } from 'hono/streaming'
+import { logger } from 'hono/logger'
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
 import { zValidator } from '@hono/zod-validator'
 import { MessageEvent, MessageRequest, saveMessage } from './lib/db'
@@ -10,7 +11,7 @@ const app = new Hono()
 
 const eventStream = new ThroughStream<MessageEvent>()
 
-app.use('*', clerkMiddleware())
+app.use('*', logger(), clerkMiddleware())
 
 app.get('/', async c => c.json({ health: 'ok' }))
 
