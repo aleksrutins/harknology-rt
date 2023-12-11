@@ -3,7 +3,7 @@ import { streamSSE } from 'hono/streaming'
 import { logger } from 'hono/logger'
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
 import { zValidator } from '@hono/zod-validator'
-import { MessageEvent, MessageRequest, saveMessage } from './lib/db'
+import { MessageEvent, MessageRequest, saveMessage, sql } from './lib/db'
 import { canAccessDiscussion } from './lib/permissions'
 import { ThroughStream } from './lib/stream'
 
@@ -30,11 +30,22 @@ app.post('/send',
 
 app.get('/stream/:discussionId', async c => {
     const auth = getAuth(c)
+    const discussionId = c.req.param('discussionId')
 
-    if(!auth?.userId || !await canAccessDiscussion(auth?.userId ?? '', c.req.param('discussionId')))
+    if(!auth?.userId || !await canAccessDiscussion(auth?.userId ?? '', discussionId))
             return c.json({ error: 'Unauthorized' }, 403)
 
     return streamSSE(c, async s => {
+        s.writeSSE({ data: JSON.stringify({
+            responses: await sql`
+                select * from "Response" where discussion_id = ${discussionId}
+            `,
+            replies: await sql`
+                select * from "Reply"
+                where from_id in
+                    (select id from "Response" where discussion_id = ${discussionId})
+            `
+        }), event: 'init' })
         for await (const chunk of eventStream.readable) {
             if(chunk.discussionId == c.req.param('discussionId')) {
                 s.writeSSE({ data: JSON.stringify(chunk), event: 'message' })
